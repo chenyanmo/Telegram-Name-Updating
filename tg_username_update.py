@@ -15,22 +15,19 @@ from time import strftime
 from telethon import TelegramClient
 from telethon.tl.functions.account import UpdateProfileRequest
 from emoji import emojize
-
+from telethon.sessions import StringSession
 
 dizzy = emojize(":dizzy:", use_aliases=True)
 cake = emojize(":cake:", use_aliases=True)
 all_time_emoji_name = ["clock12", "clock1230", "clock1", "clock130", "clock2", "clock230", "clock3", "clock330", "clock4", "clock430", "clock5", "clock530", "clock6", "clock630", "clock7", "clock730", "clock8", "clock830", "clock9", "clock930", "clock10", "clock1030", "clock11", "clock1130"]
 time_emoji_symb = [emojize(":%s:" %s, use_aliases=True) for s in all_time_emoji_name]
 
-api_auth_file = 'api_auth'
-if not os.path.exists(api_auth_file+'.session'):
-    api_id = input('api_id: ')
-    api_hash = input('api_hash: ')
-else:
-    api_id = 123456
-    api_hash = '00000000000000000000000000000000'
+# 通过 https://my.telegram.org 获取 api_id 和 api_hash
+api_id = 12345
+api_hash = 'xxxxxxxxxxxxxxxx'
+session = '' # 把第一次登录时得到的 Session 填到这里，下次重启可以直接登录
 
-client1 = TelegramClient(api_auth_file, api_id, api_hash)
+client1 = TelegramClient(StringSession(session), api_id, api_hash)
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -40,6 +37,7 @@ async def change_name_auto():
     # Set time zone to UTC+8
     # ln -sf /usr/share/zoneinfo/Asia/Chongqing /etc/localtime
     # https://stackoverflow.com/questions/4788533/python-strftime-gmtime-not-respecting-timezone
+    print("session:\n" + client1.session.save() + "\n")
 
     print('will change name')
 
@@ -55,20 +53,22 @@ async def change_name_auto():
                 # hour symbols
                 hsym = time_emoji_symb[(int(hour)%12)*2+shift]
                 # await client1.send_message('me', hsym)
-                for_fun = random.random() 
-                if for_fun < 0.10:
-                    last_name = '%s时%s分 %s' % (hour, minu, hsym)
-                elif for_fun < 0.30:
-                    last_name = '%s:%s %s %s %s' % (hour, minu, p, abbwn, hsym)
-                elif for_fun < 0.60:
-                    last_name = '%s:%s %s UTC+8 %s' % (hour, minu, p, hsym)
-                elif for_fun < 0.90:
-                    last_name = '%s' % dizzy
-                else:
-                    last_name = '%s' % cake
+
+                # for_fun = random.random() 
+                # if for_fun < 0.10:
+                #     last_name = '%s时%s分 %s' % (hour, minu, hsym)
+                # elif for_fun < 0.30:
+                #     last_name = '%s:%s %s %s %s' % (hour, minu, p, abbwn, hsym)
+                # elif for_fun < 0.60:
+                #     last_name = '%s:%s %s UTC+8 %s' % (hour, minu, p, hsym)
+                # elif for_fun < 0.90:
+                #     last_name = '%s' % dizzy
+                # else:
+                #     last_name = '%s' % cake
         
+                last_name = '%s时%s分 %s' % (hour, minu, hsym)
                 await client1(UpdateProfileRequest(last_name=last_name))
-                logger.info('Updated -> %s' % last_name)
+                # logger.info('Updated -> %s' % last_name)
         
         except KeyboardInterrupt:
             print('\nwill reset last name\n')
